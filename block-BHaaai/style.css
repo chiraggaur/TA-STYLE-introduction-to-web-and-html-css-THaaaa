@@ -1,0 +1,30 @@
+h2{
+    color: green;
+}
+body{
+    background-color: #22396a;
+}
+p,h3,h1,address{
+    color: whitesmoke;
+}
+a{
+    color: red;
+    padding-left: 2%;
+}
+
+img {
+       display: block;
+        margin-left: auto;
+        margin-right: auto;
+        width: 15%;
+        height: 15%;
+      
+    }
+h1,address{
+      text-align: center;
+    } 
+div{
+    text-align: center;
+    background-color:darkblue;
+    padding: 1%;
+}       

@@ -1,0 +1,13 @@
+h2{
+    color: green;
+}
+body{
+    background-color: navy;
+}
+p,h3,h1,address{
+    color: whitesmoke;
+}
+a{
+    color: red;
+    padding-left: 2%;
+}

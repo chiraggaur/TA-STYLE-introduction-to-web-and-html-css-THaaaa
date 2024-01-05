@@ -4,19 +4,27 @@ import styles from "./page.module.css";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import axios from "axios";
-export default function Home() {
+
+// export default function Page() {
+//   return;
+// }
+export default function Page() {
   const router = useRouter();
   const [articles, fetchArticles] = useState("");
+  const [Token, fetchedToken] = useState("");
+  const [status, loginStatus] = useState("");
 
   // fetch data from backend using axios
 
   useEffect(() => {
     const fetchData = async (req, res) => {
+      const token = localStorage.getItem("authToken");
+      fetchedToken(token);
       try {
         const response = await axios.get(
           "http://localhost:3001/api/articles/listarticles"
         );
-        console.log(response.data);
+        // console.log(response.data);
         fetchArticles(response.data);
       } catch (error) {
         console.error("Axios error:", error);
@@ -25,6 +33,28 @@ export default function Home() {
     };
     fetchData();
   }, []);
+
+  const LogoutButton = async (e) => {
+    try {
+      const token = localStorage.removeItem("authToken");
+      fetchedToken(token);
+      router.push("/");
+    } catch (error) {
+      console.error("Logout failed", error);
+    }
+  };
+  const handleComment = () => {
+    const token = localStorage.getItem("authToken");
+    fetchedToken(token);
+    if (!Token) {
+      loginStatus("login/createAccount");
+    }
+    // Navigate to the article route with elm._id as a query parameter
+  };
+  const handleStatus = () => {
+    // Navigate to the article route with elm._id as a query parameter
+    router.push("/login");
+  };
 
   return (
     <main>
@@ -38,17 +68,37 @@ export default function Home() {
           <Link href="/" className={styles.navlinks} scroll={false}>
             Home
           </Link>
-          <Link href="/login" className={styles.navlinks} scroll={false}>
-            Log in
-          </Link>
+          {Token ? (
+            <Link
+              href="/postArticles"
+              className={styles.navlinks}
+              scroll={false}
+            >
+              Post
+            </Link>
+          ) : (
+            <Link href="/login" className={styles.navlinks} scroll={false}>
+              Log in
+            </Link>
+          )}
 
-          <button
-            type="button"
-            onClick={() => router.push("/signup")}
-            className={styles.createaccountbutton}
-          >
-            Create account{" "}
-          </button>
+          {Token ? (
+            <button
+              type="button"
+              onClick={LogoutButton}
+              className={styles.createaccountbutton}
+            >
+              logout
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => router.push("/signup")}
+              className={styles.createaccountbutton}
+            >
+              Create account{" "}
+            </button>
+          )}
         </div>
       </header>
 
@@ -58,26 +108,65 @@ export default function Home() {
             articles.map((elm) => {
               return (
                 <>
-                  <div className={styles.articleBox}>
+                  <div key={elm._id} className={styles.articleBox}>
                     <article>
-                      <div>
+                      <div className={styles.authorContainer}>
                         <img
                           className={styles.authorImage}
                           src={elm.author.imageUrl}
                           alt="Profile Image"
                         />
-                        <p>{elm.author.username}</p>
-                        <p>{elm.title}</p>
+                        <p className={styles.authorname}>
+                          {elm.author.username}
+                        </p>
                       </div>
-                      <div>
-                        <p>{elm.body}</p>
+                      <div className={styles.titleContainer}>
+                        <Link
+                          href={{
+                            pathname: "/singleArticle",
+                            query: {
+                              id: elm._id,
+                            },
+                          }}
+                          className={styles.titleLink}
+                        >
+                          <p className={styles.title}>{elm.title}</p>
+                        </Link>
                       </div>
-                      <div>
-                        <p>tags</p>
+                      <div className={styles.tagsContainer}>
+                        {elm.tagList ? (
+                          <p>
+                            {elm.tagList.map((tags) => {
+                              <span>{tags}</span>;
+                            })}
+                          </p>
+                        ) : (
+                          <p>{elm.tagList}</p>
+                        )}
                       </div>
-                      <div>
-                        <p>likes /comments</p>
+                      <div className={styles.comments_likes}>
+                        <p className={styles.likesText}>
+                          <span className={styles.heartImage}>
+                            <img src="/heart-regular.svg" />
+                          </span>
+                          like
+                        </p>
+                        <p
+                          className={styles.commentText}
+                          onClick={handleComment}
+                        >
+                          <span>
+                            <img
+                              className={styles.commentImage}
+                              src="/comment-regular.svg"
+                            />
+                          </span>
+                          Comment
+                        </p>
                       </div>
+                      <p className={styles.loginStatus} onClick={handleStatus}>
+                        {status}
+                      </p>
                     </article>
                   </div>
                 </>
@@ -95,7 +184,7 @@ export default function Home() {
             <p>Discussion threads targeting the whole community</p>
             {/* change as per content dynamic */}
             <div>
-              <h3>Topic</h3>
+              <h3>Hot 🔥 Topics</h3>
               <div>
                 <span>1</span>comments
               </div>

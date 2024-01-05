@@ -16,9 +16,13 @@ export default function Signup() {
         email: emailRef.current.value,
         password: passwordRef.current.value,
       });
+      let Token = response.data.user.token;
+      // Store the token securely
+      localStorage.setItem("authToken", Token);
       responsestatus(response.data.message);
       emailRef.current.value = " ";
       passwordRef.current.value = " ";
+      return router.push("/");
     } catch (error) {
       if (error.response.status === 401) {
         responsestatus(error.response.data.message);

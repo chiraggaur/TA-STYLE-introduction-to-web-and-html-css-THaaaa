@@ -6,26 +6,38 @@ import { useRef, useCallback, useState } from "react";
 import axios from "axios";
 export default function Signup() {
   const [status, signUpResponse] = useState("");
+  const [error, setError] = useState(null);
+  const [passError, setPassError] = useState(null);
+  const [emptyError, inputEmptyError] = useState(null);
   const router = useRouter();
   const emailRef = useRef("");
   const nameRef = useRef("");
+  const imageRef = useRef("");
   const passwordRef = useRef("");
 
   const userSubmit = useCallback(async (e) => {
     e.preventDefault();
+    if (!emailRef.current.value || !passwordRef.current.value) {
+      inputEmptyError("email/password field cannot be empty");
+    }
     try {
-      const response = await axios.post(
-        `http://localhost:3001/api/user/signup`,
-        {
-          username: nameRef.current.value,
-          email: emailRef.current.value,
-          password: passwordRef.current.value,
-        }
-      );
-      signUpResponse(response.data.message);
-      emailRef.current.value = "";
-      nameRef.current.value = "";
-      passwordRef.current.value = "";
+      if (!error || !passError || !emptyError) {
+        const response = await axios.post(
+          `http://localhost:3001/api/user/signup`,
+          {
+            username: nameRef.current.value,
+            email: emailRef.current.value,
+            password: passwordRef.current.value,
+            imageUrl: imageRef.current.value,
+          }
+        );
+        signUpResponse(response.data.message);
+        emailRef.current.value = "";
+        nameRef.current.value = "";
+        passwordRef.current.value = "";
+        imageRef.current.value = "";
+        return router.push("/login");
+      }
     } catch (error) {
       if (error.response.status === 401) {
         signUpResponse(error.response.data.message);
@@ -35,6 +47,27 @@ export default function Signup() {
       }
     }
   }, []);
+
+  //
+
+  function isValidEmail(email) {
+    return /\S+@\S+\.\S+/.test(email);
+  }
+
+  const handleEmail = (event) => {
+    if (!isValidEmail(event.target.value)) {
+      setError("Email is invalid");
+    } else {
+      setError(null);
+    }
+  };
+  const handlePassword = (event) => {
+    if (event.target.value.length < 8) {
+      setPassError("Password should minimum 8 characters");
+    } else {
+      setPassError(null);
+    }
+  };
 
   return (
     <main>
@@ -81,6 +114,26 @@ export default function Signup() {
               className={styles.input}
               type="text"
               name="email"
+              onChange={handleEmail}
+            ></input>
+          </div>
+          {error === "" ? null : (
+            <div
+              style={{
+                fontSize: "18px",
+                color: "red",
+              }}
+            >
+              {error}
+            </div>
+          )}
+          <div className={styles.signupdetails}>
+            <label>ImageUrl</label>
+            <input
+              ref={imageRef}
+              className={styles.input}
+              type="text"
+              name="profileImage"
             ></input>
           </div>
           <div className={styles.signupdetails}>
@@ -90,8 +143,19 @@ export default function Signup() {
               className={styles.input}
               type="text"
               name="password"
+              onChange={handlePassword}
             ></input>
           </div>
+          {passError === "" ? null : (
+            <div
+              style={{
+                fontSize: "18px",
+                color: "red",
+              }}
+            >
+              {passError}
+            </div>
+          )}
           <div className={styles.submitdetails}>
             <button
               onClick={userSubmit}
@@ -101,7 +165,18 @@ export default function Signup() {
               Submit
             </button>
           </div>
-          <p>{status}</p>
+          {emptyError === "" ? (
+            { status }
+          ) : (
+            <div
+              style={{
+                fontSize: "18px",
+                color: "red",
+              }}
+            >
+              {emptyError}
+            </div>
+          )}
         </form>
       </div>
     </main>
